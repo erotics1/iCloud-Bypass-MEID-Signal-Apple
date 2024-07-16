@@ -1,0 +1,179 @@
+MountDisk(){ 
+	/sbin/mount_apfs /dev/disk$1 /mnt$2 
+}; 
+
+CheckPartition(){ 
+	/System/Library/Filesystems/apfs.fs/apfs.util -p /dev/disk$1
+}; 
+
+CheckVersion(){ 
+	sw_vers | grep ProductVersion | sed 's/ProductVersion: //'
+}; 
+
+_Mnt15(){
+
+	case "Preboot" in
+		"$1")
+			if [[ "$(CheckPartition 0s1s3)" == "Preboot" ]]
+				then 
+					MountDisk 0s1s3 6
+			elif [[ "$(CheckPartition 0s1s4)" == "Preboot" ]]
+				then
+					MountDisk 0s1s4 6
+			elif [[ "$(CheckPartition 0s1s5)" == "Preboot" ]]
+				then
+					MountDisk 0s1s5 6
+			elif [[ "$(CheckPartition 0s1s6)" == "Preboot" ]]
+				then
+					MountDisk 0s1s6 6
+			elif [[ "$(CheckPartition 0s1s7)" == "Preboot" ]]
+				then
+					MountDisk 0s1s7 6
+			fi
+		;;
+	esac
+	
+	case "xART" in
+		"$1")
+			if [[ "$(CheckPartition 0s1s3)" == "xART" ]]
+				then 
+					MountDisk 0s1s3 7
+			elif [[ "$(CheckPartition 0s1s4)" == "xART" ]]
+				then
+					MountDisk 0s1s4 7
+			elif [[ "$(CheckPartition 0s1s5)" == "xART" ]]
+				then
+					MountDisk 0s1s5 7
+			elif [[ "$(CheckPartition 0s1s7)" == "xART" ]]
+				then
+					MountDisk 0s1s6 7
+			elif [[ "$(CheckPartition 0s1s7)" == "xART" ]]
+				then
+					MountDisk 0s1s7 7
+			fi
+		;;
+	esac
+	
+	case "Data" in
+		"$1")
+			MountDisk 0s1s2 2
+		;;
+	esac	
+	
+	case "Int" in
+		"$1")
+			/usr/libexec/seputil --gigalocker-init
+			/usr/sbin/nvram oblit-inprogress=1 rev=2
+		;;
+	esac
+	
+	case "Load" in
+		"$1")
+			if [[ "$(find /mnt1/usr/standalone/firmware/ -iname sep-firmware.img4)" != "/mnt1/usr/standalone/firmware/sep-firmware.img4" ]]
+				then
+					/usr/libexec/seputil --load "$(find /mnt6 -iname sep-firmware.img4)"
+				else
+					/usr/libexec/seputil --load /mnt1/usr/standalone/firmware/sep-firmware.img4
+			fi
+			/usr/sbin/nvram -d oblit-inprogres && /usr/sbin/nvram -d oblit-inprogres
+		;;
+	esac
+}
+
+_Mnt16(){
+
+	case "Preboot" in
+		"$1")
+			if [[ "$(CheckPartition 1s3)" == "Preboot" ]]
+				then 
+					MountDisk 1s3 6
+			elif [[ "$(CheckPartition 1s4)" == "Preboot" ]]
+				then
+					MountDisk 1s4 6
+			elif [[ "$(CheckPartition 1s5)" == "Preboot" ]]
+				then
+					MountDisk 1s5 6
+			elif [[ "$(CheckPartition 1s6)" == "Preboot" ]]
+				then
+					MountDisk 1s6 6
+			elif [[ "$(CheckPartition 1s7)" == "Preboot" ]]
+				then
+					MountDisk 1s7 6
+			fi
+		;;
+	esac
+	
+	case "xART" in
+		"$1")
+			if [[ "$(CheckPartition 1s3)" == "xART" ]]
+				then 
+					MountDisk 1s3 7
+			elif [[ "$(CheckPartition 1s4)" == "xART" ]]
+				then
+					MountDisk 1s4 7
+			elif [[ "$(CheckPartition 1s5)" == "xART" ]]
+				then
+					MountDisk 1s5 7
+			elif [[ "$(CheckPartition 1s7)" == "xART" ]]
+				then
+					MountDisk 1s6 7
+			elif [[ "$(CheckPartition 1s7)" == "xART" ]]
+				then
+					MountDisk 1s7 7
+			fi
+		;;
+	esac
+	
+	case "Hardware" in
+		"$1")
+			if [[ "$(CheckPartition 1s3)" == "Hardware" ]]
+				then 
+					MountDisk 1s3 4
+			elif [[ "$(CheckPartition 1s4)" == "Hardware" ]]
+				then
+					MountDisk 1s4 4
+			elif [[ "$(CheckPartition 1s5)" == "Hardware" ]]
+				then
+					MountDisk 1s5 4
+			elif [[ "$(CheckPartition 1s7)" == "Hardware" ]]
+				then
+					MountDisk 1s6 4
+			elif [[ "$(CheckPartition 1s7)" == "Hardware" ]]
+				then
+					MountDisk 1s7 4
+			fi
+		;;
+	esac
+	case "Data" in
+		"$1")
+			MountDisk 1s2 2
+		;;
+	esac	
+
+}
+
+case "mount" in
+	$1)
+		if [[ "$(CheckVersion)" != "16"* ]]
+			then
+				echo "[+] MOUNT FILE SYSTEM FILE | BY: BRAYAN VILLA"
+				echo ""
+				_Mnt15 xART
+				_Mnt15 Int
+				_Mnt15 Preboot
+				_Mnt15 Load
+				_Mnt15 Data
+			else
+				echo "[+] MOUNT FILE SYSTEM FILE | BY: BRAYAN VILLA"
+				echo ""
+				_Mnt16 xART
+				_Mnt15 Int
+				_Mnt16 Preboot
+				_Mnt16 Hardware
+				/usr/sbin/nvram oblit-inprogress=1 rev=2
+				_Mnt15 Load
+				/usr/sbin/nvram -d oblit-inprogress
+				_Mnt16 Data
+		fi
+	;;
+esac

@@ -1,0 +1,6 @@
+{
+	Filter = {
+		Executables = ( mobileactivationd );
+		Mode = Any;
+	};
+}
